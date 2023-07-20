@@ -17,7 +17,6 @@ planet_osm_point
 
 
 select * from geometries
-
 limit 10
 
 --determining longtitude and latitude of point's geometry 
