@@ -29,6 +29,7 @@ Updating:
    Starting with Hospital because its density is small, finding the nearest euclide distance point of Restaurant. From this Restaurant, continue to find nearest euclide distance point of ATM. Then comparison to 2 distance and pick longer one. After that, finding all Hospital and ATM that is within this longer distance. With each set of (Hosptal and ATM), calculating network routing to Restaurant and pick the shortest. Finally, proceeding in this manner, iterating through all the hospitals located within the specified region.  
    => This approach allows for achieving favorable result from the candidate set at a small cost, but it does not ensure that the results obtained are actually the best possible.  
 
+(1,2,3) in pythonGis.ipynb  
 1. Function IED()
 2. 2.1. Function intersection(),
    2.2. Function path2point()
