@@ -1,6 +1,4 @@
 drop table geometries
-CREATE INDEX idx_vn_label ON geometries_vn USING gist (way);
-
 
 --determining longtitude and latitude of point's geometry 
 SELECT planet_osm_point.*,
@@ -17,6 +15,7 @@ planet_osm_point
 
 
 select * from geometries
+
 limit 10
 
 --determining longtitude and latitude of point's geometry 
@@ -119,6 +118,33 @@ WHERE
     AND h.osm_id < a.osm_id 
 ORDER BY distance desc) as res
 
+--find path between 2 given point
+WITH start AS (
+                      SELECT topo.source 
+                      FROM osm_2po_4pgr as topo
+                      ORDER BY topo.geom_way <-> ST_SetSRID(
+                                ST_GeomFromText('POINT (105.8042238 21.030628300404896)'),4326)
+                      LIMIT 1
+                                ),
+                    destination AS (
+                          SELECT topo.source 
+                          FROM osm_2po_4pgr as topo
+                          ORDER BY topo.geom_way <-> ST_SetSRID(
+                            ST_GeomFromText('POINT(105.8068682 21.033045300404943)'),4326)
+                          LIMIT 1
+                                    )
+                SELECT (ST_Union(geom_way)), sum(di.cost) as realcost
+                    FROM pgr_dijkstra('
+                            SELECT id,
+                                   source,
+                                   target,
+                                    ST_Length(ST_Transform(geom_way, 3857)) AS cost
+                            FROM osm_2po_4pgr',
+                                    array(SELECT source FROM start),
+                                    array(SELECT source FROM destination),
+                                    directed := false) AS di
+                    JOIN   osm_2po_4pgr AS pt
+                    ON   di.edge = pt.id
 
 	
 ---- find path&cost between 2 given point to 1 point Using pgRouting, route distance
@@ -180,7 +206,7 @@ SELECT
       (
         SELECT source
         FROM osm_2po_4pgr
-        ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(105.83589009999999, 21.016768700404654), 4326)
+        ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(105.8452161, 21.00105440040437), 4326)
         LIMIT 1
       ),
       ARRAY(
@@ -196,11 +222,18 @@ SELECT
 FROM tenNN AS point
 ;
 
+-----Index
+CREATE INDEX idx_vn_label ON geometries USING gist (way);
+DROP INDEX idx_any_label
+SELECT
+    indexname,
+    indexdef
+FROM
+    pg_indexes
+WHERE
+    tablename = 'geometries';
 
-CREATE INDEX idx_vn_label ON geometries_vn USING gist (way);
-
-
---FILTER 10NN to 1NN having shorest lost by dijkstra
+--FILTER 10NN to 5NN having shorest lost by dijkstra
 --find point, path that has the shortest route by Dijkstra from KNN nearest by Euclide
 EXPLAIN(WITH tenNN AS (
   SELECT long, lat
@@ -227,7 +260,7 @@ CROSS JOIN LATERAL (
     (
       SELECT source
       FROM osm_2po_4pgr
-      ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(105.83589009999999, 21.016768700404654), 4326)
+      ORDER BY geom_way <-> ST_SetSRID(ST_MakePoint(105.8452161, 21.00105440040437), 4326)
       LIMIT 1
     ),
     ARRAY(
@@ -245,7 +278,7 @@ limit 1)
 ;
 
 
---ST_Union(pt.geom_way) return binary form
+--ST_Union(pt.geom_way) return binary form WKB 
 --ST_AsText(ST_Union(geom_way)) return multiline-string
 -- display network routing path from multilinestring
 select ST_GeomFromText(
@@ -253,5 +286,3 @@ select ST_GeomFromText(
     4326
   )--1794.700129499897
   from geometries
-
-
