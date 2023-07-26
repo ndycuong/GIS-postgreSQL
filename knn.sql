@@ -222,16 +222,21 @@ SELECT
 FROM tenNN AS point
 ;
 
+
+
 -----Index
 CREATE INDEX idx_vn_label ON geometries USING gist (way);
-DROP INDEX idx_any_label
+CREATE INDEX new_index ON osm_2po_4pgr USING gist(geom_way);
+DROP INDEX index_pgroute
 SELECT
     indexname,
     indexdef
 FROM
     pg_indexes
 WHERE
-    tablename = 'geometries';
+    tablename = 'osm_2po_4pgr';
+
+
 
 --FILTER 10NN to 5NN having shorest lost by dijkstra
 --find point, path that has the shortest route by Dijkstra from KNN nearest by Euclide
