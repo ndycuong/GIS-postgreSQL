@@ -3,7 +3,7 @@ Spatial data Query from .osm data(Open Street Map) stored on postgreSQL
 
   
 Description: This is a course project in order to store, organize spatial data and query them by finding point and road  
-- Here I used SQL and Python for support 
+- Here I used SQL and Python for support, also with **pgrouting** vs **dijkstra** 
 
   
 -data taken from Open Street Map, .osm , .shp.  
